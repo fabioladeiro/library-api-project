@@ -2,6 +2,11 @@ package br.com.project.libraryapi.service.impl;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.StringMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.com.project.libraryapi.exception.BusinessException;
@@ -38,12 +43,29 @@ public class BookServiceImpl implements BookService {
 
 	@Override
 	public void delete(Long id) {
+		if(id == null) {
+			throw new IllegalArgumentException("Book id can not be null");
+		}
 		repository.deleteById(id);
 	}
 
 	@Override
 	public Book update(Book book) {
+		if(book	== null || book.getId() == null) {
+			throw new IllegalArgumentException("Book id can not be null");
+		}
 		return repository.save(book);
+	}
+
+	@Override
+	public Page<Book> find(Book filter, Pageable pageRequest) {
+		Example<Book> example = Example.of(filter,
+				ExampleMatcher
+					.matching()
+					.withIgnoreCase()
+					.withIgnoreNullValues()
+					.withStringMatcher(StringMatcher.CONTAINING));
+		return repository.findAll(example, pageRequest);
 	}
 
 }
